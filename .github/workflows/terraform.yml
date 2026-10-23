@@ -1,0 +1,42 @@
+name: "Terraform CI"
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  terraform:
+    name: "Terraform Init, Validate, and Plan"
+    runs-on: ubuntu-latest
+
+    # Optional: Configure environment variables if your providers require auth credentials
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    steps:
+      # 1. Clone the repository code onto the runner
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2. Install the specified version of Terraform CLI
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.6.0" # Specify your desired Terraform version
+
+      # 3. Initialize the working directory (downloads providers and modules)
+      - name: Terraform Init
+        id: init
+        run: terraform init
+
+      # 4. Check whether the configuration is syntactically valid and internally consistent
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate
+
+      # 5. Generate an execution plan to preview proposed infrastructure changes
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -no-color
